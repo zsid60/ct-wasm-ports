@@ -4,7 +4,9 @@ const fs = require('fs');
 const {promisify, rdtscp} = require('util');
 const readFileAsync = promisify(fs.readFile);
 const int64 = require('node-int64');
+
 const EC = require('elliptic').ec 
+const EdDSA = require('elliptic').eddsa
 
 function getRand(max) {
   return Math.floor(Math.random() * Math.floor(max));
@@ -17,16 +19,22 @@ function performSign(key, message, rounds) {
 }
 
 async function benchmarkDriver() {
-  const number_measurements = 1e4;
+  const number_measurements = 1e3;
   const rounds = 10;
   const warmup  = 1000;
 
   const msg_str = "Hello this is a test message"
   const message = crypto.createHash('sha256').update(msg_str).digest();  
+  
+  const curves = ['ed25519', 'secp256k1', 'p224', 'p521'];
+  const curve_num = 1; // XXX toggle this
 
-  const ec = new EC('secp256k1');
-  //const ec = new EC('p224');
-  //const ec = new EC('p521');
+  let ec;
+  if (curve_num == 0) {
+    ec = new EdDSA(curves[curve_num]);
+  } else {
+    ec = new EC(curves[curve_num]);
+  }
 
   let classes = new Array();
   for (let i = 0; i < number_measurements; i++) {
@@ -37,8 +45,8 @@ async function benchmarkDriver() {
   let keys = new Array();
   for (let i = 0; i < number_measurements; i++) {
     keys.push(ec.genKeyPair());
-    if (classes[i] == 0) {
-      const key_size = keys[i]['priv']['length'];
+    if (classes[i] == 0 ) {
+      let key_size = keys[i]['priv']['length'];
       for (let j = 0; j < key_size; j++) {
         keys[i]['priv']['words'][j] = 0;
       }
