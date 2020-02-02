@@ -74,12 +74,14 @@ async function benchmarkDriver() {
     }
   }
 
+  performSign(keys[0], message, 1);
+  
+  // run node with --allow-natives-syntax
+  %OptimizeFunctionOnNextCall(performSign);
+ 
   for (let i = 0; i < warmup; i++) {
     performSign(keys[0], message, 1);
   }
- 
-  // run node with --allow-natives-syntax
-  %OptimizeFunctionOnNextCall(performSign);
  
 
   let measurements = new Array();
