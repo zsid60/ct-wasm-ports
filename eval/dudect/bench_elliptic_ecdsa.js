@@ -41,18 +41,39 @@ async function benchmarkDriver() {
     classes.push(getRand(2));
   }
 
-
   let keys = new Array();
-  for (let i = 0; i < number_measurements; i++) {
-    keys.push(ec.genKeyPair());
-    if (classes[i] == 0 ) {
-      let key_size = keys[i]['priv']['length'];
-      for (let j = 0; j < key_size; j++) {
-        keys[i]['priv']['words'][j] = 0;
+
+  // ed25519 key from secret
+  if (curve_num == 0) {
+    const key_bytes = 32;
+    for (let i = 0; i < number_measurements; i++) {
+      let secret = new Uint8Array(key_bytes);
+      if (classes[i] == 0) {
+        for (let j = 0; j < key_bytes; j++) {
+          secret[j] = 0;
+        }
+      } else {
+        for (let j = 0; j < key_size * 4; j++) {
+          secret[j] = getRand(0xff);
+        }
       }
-    } 
+      keys.push(ec.keyFromSecret(secret));
+    }
   }
   
+  // regular random ecdsa key pair with manual 0ing of key
+  else { 
+    for (let i = 0; i < number_measurements; i++) {
+      keys.push(ec.genKeyPair());
+      if (classes[i] == 0 ) {
+        let key_size = keys[i]['priv']['length'];
+        for (let j = 0; j < key_size; j++) {
+          keys[i]['priv']['words'][j] = 0;
+        }
+      } 
+    }
+  }
+
   for (let i = 0; i < warmup; i++) {
     performSign(keys[0], message, 1);
   }
