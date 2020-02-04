@@ -8,6 +8,8 @@ const int64 = require('node-int64');
 const EC = require('elliptic').ec 
 const EdDSA = require('elliptic').eddsa
 
+const BN = require('bn.js')
+
 function getRand(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
@@ -53,7 +55,7 @@ async function benchmarkDriver() {
           secret[j] = 0;
         }
       } else {
-        for (let j = 0; j < key_size * 4; j++) {
+        for (let j = 0; j < key_bytes * 4; j++) {
           secret[j] = getRand(0xff);
         }
       }
@@ -62,18 +64,29 @@ async function benchmarkDriver() {
   }
   
   // regular random ecdsa key pair with manual 0ing of key
-  else { 
+  else {
+    const fixed_key = ec.genKeyPair();
     for (let i = 0; i < number_measurements; i++) {
-      keys.push(ec.genKeyPair());
+      if (classes[i] == 0) {
+        keys.push(fixed_key);
+      }
+      else {
+        keys.push(ec.genKeyPair());
+      }
+      
+      /*
       if (classes[i] == 0 ) {
-        let key_size = keys[i]['priv']['length'];
+        
+        /*let key_size = keys[i]['priv']['length'];
         for (let j = 0; j < key_size; j++) {
           keys[i]['priv']['words'][j] = 0;
         }
-      } 
+
+      } */
     }
   }
 
+  performSign(keys[0], message, 1);
   performSign(keys[0], message, 1);
   
   // run node with --allow-natives-syntax
