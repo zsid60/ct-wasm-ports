@@ -65,10 +65,12 @@ async function benchmarkDriver() {
   
   // regular random ecdsa key pair with manual 0ing of key
   else {
-    const fixed_key = ec.genKeyPair();
+    // Completely arbitrary but fixed
+    const n = new BN('1b0e58265f70c4d4a3fefb0f8290387e17703db9a2a8761987bddffad0650984', 16);
+    const k = ec.keyFromPrivate(n);
     for (let i = 0; i < number_measurements; i++) {
       if (classes[i] == 0) {
-        keys.push(fixed_key);
+        keys.push(k);
       }
       else {
         keys.push(ec.genKeyPair());
