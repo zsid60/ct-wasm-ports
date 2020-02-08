@@ -21,7 +21,7 @@ function performSign(key, message, rounds) {
 }
 
 async function benchmarkDriver() {
-  const number_measurements = 1e3;
+  const number_measurements = 1e2;
   const rounds = 10;
   const warmup  = 1000;
 
