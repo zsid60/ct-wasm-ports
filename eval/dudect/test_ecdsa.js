@@ -25,8 +25,8 @@ function perform1Sign(key, message) {
 
 async function benchmarkDriver() {
 
-  const num_classes = 50;
-  const number_measurements = 20000 * num_classes;
+  const num_classes = 1000;
+  const number_measurements = 15000 * num_classes;
   const warmup  = 1000;
   const rounds = 1;
 
@@ -114,15 +114,18 @@ async function benchmarkDriver() {
     let sig = perform1Sign(key, hash_of_m, rounds);
     let end = rdtscp();
 
-    let diff = new int64(end[1], end[0]) - new int64(start[1], start[0]);
+    let end_str = end[1].toString() + end[0].toString();
+    let start_str = start[1].toString() + start[0].toString();
+    let diff = Number(BigInt(end_str) - BigInt(start_str));
     measurements[classes[i]].push(diff)
     
+
     if (i % (number_measurements / 20) == 0) {
       console.log("iter " + i + " done");
     }
   }
 
-  fs.writeFile('classes.log',
+  fs.writeFile('test_output/classes.log',
     classes.join('\n') + '\n',
     err => { if (err) throw err; });
 
