@@ -25,6 +25,7 @@ function perform1Sign(key, message) {
 
 async function benchmarkDriver() {
 
+  const run_num = 3
   const num_classes = 1000;
   const number_measurements = 15000 * num_classes;
   const warmup  = 1000;
@@ -67,7 +68,7 @@ async function benchmarkDriver() {
   let nonces = new Array(num_classes);
 
   for (let i = 0; i < hs.length; i++) {
-    sigs[i] = perform1Sign(key, hs[i], 1);
+    sigs[i] = perform1Sign(key, hs[i]);
 
   }
   
@@ -101,7 +102,7 @@ async function benchmarkDriver() {
   %OptimizeFunctionOnNextCall(perform1Sign);
  
   for (let i = 0; i < warmup; i++) {
-    perform1Sign(key, hs[0], 1);
+    perform1Sign(key, hs[0]);
   }
   
   console.log("Finished warmup");
@@ -111,7 +112,7 @@ async function benchmarkDriver() {
   for (let i = 0; i < number_measurements; i++) {
     let hash_of_m = hs_for_meas[i]
     let start = rdtscp();
-    let sig = perform1Sign(key, hash_of_m, rounds);
+    let sig = perform1Sign(key, hash_of_m);
     let end = rdtscp();
 
     let end_str = end[1].toString() + end[0].toString();
@@ -125,21 +126,21 @@ async function benchmarkDriver() {
     }
   }
 
-  fs.writeFile('test_output/classes.log',
+  fs.writeFile('test_output/run' + run_num + '/classes.log',
     classes.join('\n') + '\n',
     err => { if (err) throw err; });
 
   for (let i = 0; i < num_classes; i++) {
-    fs.writeFile('test_output/times' + i + '.log',
+    fs.writeFile('test_output/run' + run_num + '/times' + i + '.log',
     measurements[i].map(m => m.toString()).join('\n') + '\n',
     err => { if (err) throw err; });
   }  
 
-  fs.writeFile('test_output/sigs.log',
+  fs.writeFile('test_output/run' + run_num + '/sigs.log',
     sigs.map(sig => "r: " + sig.r.toString(16,32) + "\ts: " + sig.s.toString(16,32) + "\t recovery: " + sig.recoveryParam).join('\n') + '\n',
     err => { if (err) throw err; });
   
-  fs.writeFile('test_output/nonces.log', 
+  fs.writeFile('test_output/run' + run_num + '/nonces.log', 
     nonces.map(n => n.toString(16,32) + '  (' + n.bitLength() + ' bits)').join('\n') + '\n',
     err => { if (err) throw err; });
     
