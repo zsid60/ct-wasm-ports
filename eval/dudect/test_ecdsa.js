@@ -23,10 +23,16 @@ function perform1Sign(key, message) {
   return key.sign(message);
 }
 
+function pairToBigInt(x){
+  hi = BigInt(x[1]);
+  lo = BigInt(x[0]);
+  return (hi << 32n | lo);
+}
+
 async function benchmarkDriver() {
 
-  const run_num = 5;
-  const num_classes = 5;
+  const run_num = 6;
+  const num_classes = 1000;
   const number_measurements = 15000 * num_classes;
   const warmup  = 1000;
   const rounds = 1;
@@ -99,7 +105,7 @@ async function benchmarkDriver() {
   console.log("Begin warmup");
 
   // run node with --allow-natives-syntax
-  //%OptimizeFunctionOnNextCall(perform1Sign);
+  %OptimizeFunctionOnNextCall(perform1Sign);
  
   for (let i = 0; i < warmup; i++) {
     perform1Sign(key, hs[0]);
@@ -115,9 +121,7 @@ async function benchmarkDriver() {
     let sig = perform1Sign(key, hash_of_m);
     let end = rdtscp();
 
-    let end_str = '0x' + end[1].toString(16) + end[0].toString(16);
-    let start_str = '0x' + start[1].toString(16) + start[0].toString(16);
-    let diff = Number(BigInt(end_str) - BigInt(start_str));
+    let diff = Number(pairToBigInt(end) - pairToBigInt(start));
     measurements[classes[i]].push(diff)
     
 
